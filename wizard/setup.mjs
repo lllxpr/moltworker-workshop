@@ -473,6 +473,60 @@ async function main() {
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
+  // REVIEW: Confirm all values before setting secrets
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  let reviewDone = false;
+  while (!reviewDone) {
+    ln();
+    console.log(`${C}${B}  ── Review Configuration ──${R}`);
+    ln();
+
+    const editable = [
+      { key: 'apiToken',          label: 'API Token',              value: apiToken, mask: true },
+      { key: 'gatewayId',         label: 'AI Gateway ID',          value: config.gatewayId },
+      { key: 'aigToken',          label: 'AI Gateway Auth Token',  value: config.aigToken, mask: true },
+      { key: 'model',             label: 'AI Model',               value: config.model },
+      { key: 'gatewayToken',      label: 'Gateway Token (Control)',value: config.gatewayToken },
+      { key: 'r2AccessKeyId',     label: 'R2 Access Key ID',       value: config.r2AccessKeyId, mask: true },
+      { key: 'r2SecretAccessKey', label: 'R2 Secret Access Key',   value: config.r2SecretAccessKey, mask: true },
+    ];
+
+    editable.forEach((e, i) => {
+      const display = !e.value ? `${D}(not set)${R}` :
+        e.mask ? `${e.value.slice(0, 8)}...${e.value.slice(-4)}` : e.value;
+      console.log(`  ${C}${i + 1}${R}) ${B}${e.label}${R}: ${display}`);
+    });
+
+    ln();
+    const editChoice = await ask(rl, 'Enter number to re-edit, or press Enter to continue');
+
+    if (!editChoice) {
+      reviewDone = true;
+    } else {
+      const idx = parseInt(editChoice, 10) - 1;
+      if (idx >= 0 && idx < editable.length) {
+        const item = editable[idx];
+        const newVal = await ask(rl, `New value for ${item.label}`);
+        if (newVal) {
+          switch (item.key) {
+            case 'apiToken':          apiToken = newVal; break;
+            case 'gatewayId':         config.gatewayId = newVal; break;
+            case 'aigToken':          config.aigToken = newVal; break;
+            case 'model':             config.model = newVal; break;
+            case 'gatewayToken':      config.gatewayToken = newVal; break;
+            case 'r2AccessKeyId':     config.r2AccessKeyId = newVal; break;
+            case 'r2SecretAccessKey': config.r2SecretAccessKey = newVal; break;
+          }
+          ok(`${item.label} updated`);
+        }
+      } else {
+        warn('Invalid choice');
+      }
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
   // STEP 9: Set All Secrets
   // ═══════════════════════════════════════════════════════════════════════════
 
