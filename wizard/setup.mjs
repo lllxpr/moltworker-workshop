@@ -133,7 +133,12 @@ async function cfApi(method, path, accountId, apiToken, body) {
 
 function setSecret(name, value) {
   try {
-    run(`echo "${value}" | npx wrangler secret put ${name} 2>&1`, { silent: true, cwd: ROOT });
+    execSync(`npx wrangler secret put ${name}`, {
+      input: value + '\n',
+      encoding: 'utf-8',
+      stdio: ['pipe', 'pipe', 'pipe'],
+      cwd: ROOT,
+    });
     return true;
   } catch {
     return false;
@@ -290,8 +295,10 @@ async function main() {
     const gwResult = await cfApi('POST', '/ai-gateway/gateways', config.accountId, apiToken, {
       id: gwName,
       name: 'Moltworker Workshop',
-      rate_limiting: { rps: 20 },
-      cache: { enabled: true },
+      rate_limiting_interval: 60,
+      rate_limiting_limit: 200,
+      rate_limiting_technique: 'fixed',
+      collect_logs: true,
     });
 
     if (gwResult.success) {
@@ -332,16 +339,23 @@ async function main() {
   if (apiToken) {
     info('Attempting to create AI Gateway auth token via API...');
 
-    // Try to create an AI Gateway token
+    // Try to create an AI Gateway token via the authentication endpoint
     const tokenResult = await cfApi('POST', `/ai-gateway/gateways/${config.gatewayId}/tokens`, config.accountId, apiToken, {
       name: 'moltworker-workshop-token',
     });
 
-    if (tokenResult.success && tokenResult.result?.value) {
+    if (tokenResult.success && tokenResult.result?.token) {
+      aigToken = tokenResult.result.token;
+      ok('AI Gateway auth token created');
+    } else if (tokenResult.success && tokenResult.result?.value) {
       aigToken = tokenResult.result.value;
       ok('AI Gateway auth token created');
     } else {
-      warn('Could not auto-create AI Gateway token.');
+      // Fallback: the API token itself can be used as cf-aig-authorization
+      // if the gateway has authentication disabled (default for new gateways)
+      info('Auto-creation not available for this gateway.');
+      info('You can use your Cloudflare API Token as the AI Gateway auth token,');
+      info('or create a dedicated token in the dashboard.');
     }
   }
 
@@ -410,16 +424,33 @@ async function main() {
   if (setupR2) {
     const bucketName = 'moltbot-data';
 
-    // Create R2 bucket
+    // Create R2 bucket via API (more reliable than wrangler CLI)
     info(`Creating R2 bucket: ${bucketName}`);
-    const bucketResult = run(`npx wrangler r2 bucket create ${bucketName} 2>&1`, { silent: true, allowFail: true, cwd: ROOT });
-    if (bucketResult && !bucketResult.includes('ERROR')) {
-      ok(`R2 bucket created: ${bucketName}`);
-    } else if (bucketResult && bucketResult.includes('already exists')) {
-      ok(`R2 bucket already exists: ${bucketName}`);
-    } else {
-      warn('Could not create R2 bucket automatically.');
-      info('Create it manually: Dashboard → R2 → Create Bucket → Name: moltbot-data');
+    let bucketCreated = false;
+    if (apiToken) {
+      const bucketResult = await cfApi('POST', '/r2/buckets', config.accountId, apiToken, { name: bucketName });
+      if (bucketResult.success) {
+        ok(`R2 bucket created: ${bucketName}`);
+        bucketCreated = true;
+      } else {
+        const errMsg = bucketResult.errors?.[0]?.message || '';
+        if (errMsg.includes('already exists') || errMsg.includes('duplicate')) {
+          ok(`R2 bucket already exists: ${bucketName}`);
+          bucketCreated = true;
+        }
+      }
+    }
+    if (!bucketCreated) {
+      // Fallback: try wrangler CLI
+      const cliResult = run(`npx wrangler r2 bucket create ${bucketName} 2>&1`, { silent: true, allowFail: true, cwd: ROOT });
+      if (cliResult && !cliResult.includes('ERROR')) {
+        ok(`R2 bucket created: ${bucketName}`);
+      } else if (cliResult && cliResult.includes('already exists')) {
+        ok(`R2 bucket already exists: ${bucketName}`);
+      } else {
+        warn('Could not create R2 bucket automatically.');
+        info('Create it manually: Dashboard → R2 → Create Bucket → Name: moltbot-data');
+      }
     }
 
     // R2 API Token
