@@ -18,8 +18,12 @@ const GREEN = '\x1b[32m';
 const DIM = '\x1b[2m';
 const RESET = '\x1b[0m';
 
-function log(msg) { console.log(`  ${GREEN}▸${RESET} ${msg}`); }
-function dim(msg) { console.log(`  ${DIM}${msg}${RESET}`); }
+const YELLOW = '\x1b[33m';
+
+function log(msg)  { console.log(`  ${GREEN}▸${RESET} ${msg}`); }
+function ok(msg)   { console.log(`  ${GREEN}✓${RESET} ${msg}`); }
+function warn(msg) { console.log(`  ${YELLOW}⚠${RESET} ${msg}`); }
+function dim(msg)  { console.log(`  ${DIM}${msg}${RESET}`); }
 
 // Check if we already have the upstream source
 if (existsSync(resolve(ROOT, 'wrangler.jsonc')) && existsSync(resolve(ROOT, 'src'))) {
@@ -83,6 +87,15 @@ try {
 
     writeFileSync(workshopPkg, JSON.stringify(workshop, null, 2) + '\n');
     dim('Merged upstream dependencies into package.json');
+
+    // Re-run npm install to fetch the merged dependencies (--ignore-scripts avoids infinite loop)
+    log('Installing upstream dependencies...');
+    try {
+      execSync('npm install --ignore-scripts', { cwd: ROOT, stdio: 'inherit' });
+      ok('Dependencies installed');
+    } catch {
+      warn('Could not auto-install dependencies. Run "npm install" again manually.');
+    }
   }
 
   log('Workshop overlay applied.');
