@@ -1,0 +1,16 @@
+{
+  "name": "moltworker-workshop",
+  "version": "1.0.0",
+  "description": "Workshop edition of Moltworker — deploy your AI agent on Cloudflare with an interactive wizard",
+  "type": "module",
+  "scripts": {
+    "wizard": "node wizard/setup.mjs",
+    "setup": "node wizard/setup.mjs",
+    "postinstall": "node wizard/postinstall.mjs",
+    "deploy": "npx wrangler deploy",
+    "dev": "npx wrangler dev",
+    "tail": "npx wrangler tail"
+  },
+  "keywords": ["cloudflare", "workers-ai", "moltworker", "openclaw", "ai-agent", "workshop"],
+  "license": "MIT"
+}
