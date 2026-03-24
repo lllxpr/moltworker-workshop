@@ -22,7 +22,7 @@ function log(msg) { console.log(`  ${GREEN}▸${RESET} ${msg}`); }
 function dim(msg) { console.log(`  ${DIM}${msg}${RESET}`); }
 
 // Check if we already have the upstream source
-if (existsSync(resolve(ROOT, 'wrangler.toml')) && existsSync(resolve(ROOT, 'src'))) {
+if (existsSync(resolve(ROOT, 'wrangler.jsonc')) && existsSync(resolve(ROOT, 'src'))) {
   dim('Moltworker source already present — skipping clone.');
   process.exit(0);
 }
@@ -51,8 +51,14 @@ if (!existsSync(UPSTREAM_DIR)) {
 // Copy upstream files into the workshop root (excluding .git, README, package.json, wizard/)
 log('Applying workshop overlay...');
 try {
-  // Copy source files
-  const filesToCopy = ['src', 'wrangler.toml', 'tsconfig.json', 'Dockerfile'];
+  // Copy all upstream source files (exclude .git, README, package.json — we keep our own)
+  const filesToCopy = [
+    'src', 'wrangler.jsonc', 'tsconfig.json', 'Dockerfile',
+    'vite.config.ts', 'vitest.config.ts', 'start-openclaw.sh',
+    'index.html', 'public', 'skills', 'assets',
+    '.dev.vars.example', '.oxfmtrc.json', '.oxlintrc.json',
+    'test', 'AGENTS.md',
+  ];
   for (const f of filesToCopy) {
     const src = resolve(UPSTREAM_DIR, f);
     if (existsSync(src)) {
@@ -84,21 +90,18 @@ try {
   dim(`Overlay warning: ${e.message}`);
 }
 
-// Apply workshop-specific patches to wrangler.toml
-const wranglerPath = resolve(ROOT, 'wrangler.toml');
+// Apply workshop-specific patches to wrangler.jsonc
+const wranglerPath = resolve(ROOT, 'wrangler.jsonc');
 if (existsSync(wranglerPath)) {
-  let toml = readFileSync(wranglerPath, 'utf-8');
+  let jsonc = readFileSync(wranglerPath, 'utf-8');
 
-  // Add SANDBOX_SLEEP_AFTER default for cost savings
-  if (!toml.includes('SANDBOX_SLEEP_AFTER')) {
-    toml += `
-# Workshop: auto-sleep after 10 minutes idle to save costs
-[vars]
-SANDBOX_SLEEP_AFTER = "10m"
-`;
-    writeFileSync(wranglerPath, toml);
-    dim('Added SANDBOX_SLEEP_AFTER=10m to wrangler.toml');
+  // Rename worker to workshop name
+  if (jsonc.includes('"moltbot-sandbox"')) {
+    jsonc = jsonc.replace('"moltbot-sandbox"', '"moltworker-workshop"');
+    dim('Renamed worker to moltworker-workshop');
   }
+
+  writeFileSync(wranglerPath, jsonc);
 }
 
 console.log('');

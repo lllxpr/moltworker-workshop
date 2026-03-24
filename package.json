@@ -3,13 +3,17 @@
   "version": "1.0.0",
   "description": "Workshop edition of Moltworker — deploy your AI agent on Cloudflare with an interactive wizard",
   "type": "module",
+  "private": true,
   "scripts": {
     "wizard": "node wizard/setup.mjs",
     "setup": "node wizard/setup.mjs",
     "postinstall": "node wizard/postinstall.mjs",
-    "deploy": "npx wrangler deploy",
-    "dev": "npx wrangler dev",
-    "tail": "npx wrangler tail"
+    "build": "vite build",
+    "deploy": "npm run build && wrangler deploy",
+    "dev": "vite dev",
+    "start": "wrangler dev",
+    "types": "wrangler types",
+    "tail": "wrangler tail"
   },
   "keywords": ["cloudflare", "workers-ai", "moltworker", "openclaw", "ai-agent", "workshop"],
   "license": "MIT"
