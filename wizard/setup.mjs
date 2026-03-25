@@ -242,6 +242,105 @@ async function main() {
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
+  // MODE SELECTION: Interactive vs Bulk Paste
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  ln();
+  const modeChoice = await choose(rl, 'Choose setup mode:', [
+    { label: 'Interactive Mode', desc: 'Step-by-step guided setup (recommended for first-time)', default: true, value: 'interactive' },
+    { label: 'Bulk Paste Mode', desc: 'Fill a template with all keys at once (faster for re-runs)', value: 'bulk' },
+  ]);
+
+  const useBulkMode = modeChoice.value === 'bulk';
+
+  if (useBulkMode) {
+    // ═══════════════════════════════════════════════════════════════════════════
+    // BULK PASTE MODE
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    ln();
+    console.log(`${C}${B}  ── Bulk Paste Mode ──${R}`);
+    ln();
+    info('Copy the template below, fill in your values, then paste it back:');
+    ln();
+
+    const template = `# Moltworker Setup Template
+# Fill in the values after the = sign, then copy and paste the entire block back
+
+CLOUDFLARE_API_TOKEN=
+AI_GATEWAY_ID=moltworker-workshop
+AI_GATEWAY_AUTH_TOKEN=
+AI_MODEL=workers-ai/@cf/moonshotai/kimi-k2.5
+GATEWAY_TOKEN=${generateHex(32)}
+R2_ACCESS_KEY_ID=
+R2_SECRET_ACCESS_KEY=
+
+# Optional: leave blank to skip R2 setup
+# Gateway Token is auto-generated above - save it for Control UI access`;
+
+    console.log(`${D}${'─'.repeat(70)}${R}`);
+    console.log(template);
+    console.log(`${D}${'─'.repeat(70)}${R}`);
+    ln();
+
+    info('After filling the template, paste it below as a single block:');
+    info('(Tip: paste all lines at once, then press Enter)');
+    ln();
+
+    // Read bulk input line by line
+    let bulkInput = '';
+    let lineCount = 0;
+    const maxLines = 15;
+    
+    info('Paste your filled template (press Enter twice when done):');
+    while (lineCount < maxLines) {
+      const line = await ask(rl, '', '');
+      if (!line && lineCount > 0) break; // Empty line after some input = done
+      if (line) {
+        bulkInput += line + '\n';
+        lineCount++;
+      }
+    }
+
+    // Parse the bulk input
+    const parseValue = (key) => {
+      const match = bulkInput.match(new RegExp(`^${key}=(.*)$`, 'm'));
+      return match ? match[1].trim() : '';
+    };
+
+    apiToken = parseValue('CLOUDFLARE_API_TOKEN');
+    config.gatewayId = parseValue('AI_GATEWAY_ID') || 'moltworker-workshop';
+    config.aigToken = parseValue('AI_GATEWAY_AUTH_TOKEN');
+    config.model = parseValue('AI_MODEL') || 'workers-ai/@cf/moonshotai/kimi-k2.5';
+    config.gatewayToken = parseValue('GATEWAY_TOKEN');
+    config.r2AccessKeyId = parseValue('R2_ACCESS_KEY_ID');
+    config.r2SecretAccessKey = parseValue('R2_SECRET_ACCESS_KEY');
+
+    // Verify required fields
+    if (!apiToken) {
+      warn('CLOUDFLARE_API_TOKEN is required but not provided');
+    }
+    if (!config.aigToken) {
+      warn('AI_GATEWAY_AUTH_TOKEN is required but not provided');
+    }
+    if (!config.gatewayToken) {
+      config.gatewayToken = generateHex(32);
+      warn('GATEWAY_TOKEN was empty, generated a new one');
+    }
+
+    ok('Bulk configuration loaded');
+    ln();
+    console.log(`${Y}${B}  🔑 SAVE THIS GATEWAY TOKEN:${R}`);
+    console.log(`  ${config.gatewayToken}`);
+    ln();
+
+    // Skip to review step
+  } else {
+    // ═══════════════════════════════════════════════════════════════════════════
+    // INTERACTIVE MODE (original flow)
+    // ═══════════════════════════════════════════════════════════════════════════
+
+  // ═══════════════════════════════════════════════════════════════════════════
   // STEP 3: API Token
   // ═══════════════════════════════════════════════════════════════════════════
 
@@ -471,6 +570,8 @@ async function main() {
       config.r2SecretAccessKey = await ask(rl, 'R2 Secret Access Key');
     }
   }
+
+  } // End of interactive mode
 
   // ═══════════════════════════════════════════════════════════════════════════
   // REVIEW: Confirm all values before setting secrets
