@@ -32,51 +32,31 @@
   "build": {
     "command": "npm run build",
   },
-  // Environment variables
-  "vars": {
-    "DEV_MODE": "true"
+  // Container configuration for the Moltbot sandbox
+  // Deploy to Cloudflare builds containers in the cloud automatically
+  // Local deployment with `wrangler deploy` requires Docker
+  "containers": [
+    {
+      "class_name": "Sandbox",
+      "image": "./Dockerfile",
+      "instance_type": "standard-1",
+      "max_instances": 1,
+    },
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "class_name": "Sandbox",
+        "name": "Sandbox",
+      },
+    ],
   },
-  // ⚠️ Container Configuration (Currently Disabled)
-  // 
-  // Cloudflare Containers run in the cloud, BUT Wrangler CLI requires LOCAL Docker
-  // to build the container image before deployment. This is a Wrangler limitation.
-  // 
-  // Official docs: https://developers.cloudflare.com/containers/get-started/
-  // "You must have Docker running locally when you run wrangler deploy"
-  //
-  // Without containers, Python code execution is disabled, but all other features work:
-  // ✅ AI conversations (via Cloudflare AI Gateway)
-  // ✅ R2 persistent storage
-  // ✅ Browser rendering
-  // ❌ Python code execution (requires containers)
-  //
-  // To enable containers (requires local Docker):
-  // 1. Install and start Docker Desktop
-  // 2. Uncomment the sections below
-  // 3. Run: npm run deploy
-  //
-  // "containers": [
-  //   {
-  //     "class_name": "Sandbox",
-  //     "image": "./Dockerfile",
-  //     "instance_type": "standard-1",
-  //     "max_instances": 1,
-  //   },
-  // ],
-  // "durable_objects": {
-  //   "bindings": [
-  //     {
-  //       "class_name": "Sandbox",
-  //       "name": "Sandbox",
-  //     },
-  //   ],
-  // },
-  // "migrations": [
-  //   {
-  //     "new_sqlite_classes": ["Sandbox"],
-  //     "tag": "v1",
-  //   },
-  // ],
+  "migrations": [
+    {
+      "new_sqlite_classes": ["Sandbox"],
+      "tag": "v1",
+    },
+  ],
   // R2 bucket for persistent storage (moltbot data, conversations, etc.)
   "r2_buckets": [
     {
