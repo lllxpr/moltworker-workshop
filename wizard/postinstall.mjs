@@ -99,6 +99,29 @@ try {
   }
 
   log('Workshop overlay applied.');
+
+  // Patch upstream index.ts to handle missing Sandbox binding
+  const indexPath = resolve(UPSTREAM, 'src/index.ts');
+  if (existsSync(indexPath)) {
+    let indexCode = readFileSync(indexPath, 'utf-8');
+    
+    // Replace getSandbox call to check if Sandbox binding exists
+    const originalGetSandbox = `  const options = buildSandboxOptions(c.env);
+  const sandbox = getSandbox(c.env.Sandbox, 'moltbot', options);`;
+    
+    const patchedGetSandbox = `  const options = buildSandboxOptions(c.env);
+  // Check if Sandbox binding exists (may be disabled when Docker is not available)
+  const sandbox = c.env.Sandbox ? getSandbox(c.env.Sandbox, 'moltbot', options) : null;
+  if (!sandbox && c.req.path.includes('/sandbox')) {
+    return c.text('Python sandbox is disabled (Docker not available)', 503);
+  }`;
+    
+    if (indexCode.includes(originalGetSandbox)) {
+      indexCode = indexCode.replace(originalGetSandbox, patchedGetSandbox);
+      writeFileSync(indexPath, indexCode);
+      ok('Patched index.ts to handle missing Sandbox binding');
+    }
+  }
 } catch (e) {
   dim(`Overlay warning: ${e.message}`);
 }
