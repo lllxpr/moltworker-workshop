@@ -270,13 +270,14 @@ async function main() {
 CLOUDFLARE_API_TOKEN=
 AI_GATEWAY_ID=moltworker-workshop
 AI_GATEWAY_AUTH_TOKEN=
-AI_MODEL=workers-ai/@cf/moonshotai/kimi-k2.5
+AI_MODEL=@cf/moonshotai/kimi-k2.5
 GATEWAY_TOKEN=${generateHex(32)}
 R2_ACCESS_KEY_ID=
 R2_SECRET_ACCESS_KEY=
 
 # Optional: leave blank to skip R2 setup
-# Gateway Token is auto-generated above - save it for Control UI access`;
+# Gateway Token is auto-generated above - save it for Control UI access
+# Available models: @cf/moonshotai/kimi-k2.5, @cf/zai-org/glm-4.7-flash, @cf/meta/llama-3.3-70b-instruct-fp8-fast`;
 
     console.log(`${D}${'─'.repeat(70)}${R}`);
     console.log(template);
@@ -311,7 +312,7 @@ R2_SECRET_ACCESS_KEY=
     apiToken = parseValue('CLOUDFLARE_API_TOKEN');
     config.gatewayId = parseValue('AI_GATEWAY_ID') || 'moltworker-workshop';
     config.aigToken = parseValue('AI_GATEWAY_AUTH_TOKEN');
-    config.model = parseValue('AI_MODEL') || 'workers-ai/@cf/moonshotai/kimi-k2.5';
+    config.model = parseValue('AI_MODEL') || '@cf/moonshotai/kimi-k2.5';
     config.gatewayToken = parseValue('GATEWAY_TOKEN');
     config.r2AccessKeyId = parseValue('R2_ACCESS_KEY_ID');
     config.r2SecretAccessKey = parseValue('R2_SECRET_ACCESS_KEY');
@@ -479,10 +480,10 @@ R2_SECRET_ACCESS_KEY=
   step(6, TOTAL, 'AI Model Selection');
 
   const modelChoice = await choose(rl, 'Select the AI model for your agent:', [
-    { label: 'Kimi K2.5 (Recommended)', desc: '256k context, tool calling, vision', default: true, value: 'workers-ai/@cf/moonshotai/kimi-k2.5' },
-    { label: 'Llama 4 Scout 17B', desc: 'Multimodal MoE by Meta', value: 'workers-ai/@cf/meta/llama-4-scout-17b-16e-instruct' },
-    { label: 'GLM 4.7 Flash', desc: 'Fast multilingual by Zhipu', value: 'workers-ai/@cf/zhipu/glm-4.7-flash' },
-    { label: 'Custom model', desc: 'Enter a model ID manually', value: 'custom' },
+    { label: 'Kimi K2.5', desc: '256k context, tool calling, vision', default: true, value: '@cf/moonshotai/kimi-k2.5' },
+    { label: 'GLM 4.7 Flash', desc: 'Fast multilingual by Zhipu AI', value: '@cf/zai-org/glm-4.7-flash' },
+    { label: 'Llama 3.3 70B', desc: 'FP8 fast inference by Meta', value: '@cf/meta/llama-3.3-70b-instruct-fp8-fast' },
+    { label: 'Other', desc: 'Enter a custom model ID', value: 'custom' },
   ]);
 
   if (modelChoice.value === 'custom') {
