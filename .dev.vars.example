@@ -5,19 +5,20 @@
 # ANTHROPIC_API_KEY=sk-ant-...  # Not needed for workshop
 # OPENAI_API_KEY=sk-...  # Not needed for workshop
 
-# Cloudflare AI Gateway (required for workshop)
-CLOUDFLARE_AI_GATEWAY_API_KEY=your-ai-gateway-auth-token
-CF_AI_GATEWAY_ACCOUNT_ID=your-cloudflare-account-id
-CF_AI_GATEWAY_GATEWAY_ID=moltworker-workshop
-CF_AI_GATEWAY_MODEL=@cf/moonshotai/kimi-k2.5
+# Cloudflare API Token (for wizard automation)
+CLOUDFLARE_API_TOKEN=your-cloudflare-api-token
+
+# AI Gateway Configuration (required for workshop)
+AI_GATEWAY_ID=moltworker-workshop
+AI_GATEWAY_AUTH_TOKEN=your-ai-gateway-auth-token
+AI_MODEL=@cf/moonshotai/kimi-k2.5
 
 # R2 Storage (required for persistence)
 R2_ACCESS_KEY_ID=your-r2-access-key-id
 R2_SECRET_ACCESS_KEY=your-r2-secret-access-key
-CF_ACCOUNT_ID=your-cloudflare-account-id
 
 # Gateway Token (required for Control UI access)
-MOLTBOT_GATEWAY_TOKEN=generate-with-openssl-rand-hex-32
+GATEWAY_TOKEN=generate-with-openssl-rand-hex-32
 
 # Local development mode - skips Cloudflare Access auth and bypasses device pairing
 # DEV_MODE=true
