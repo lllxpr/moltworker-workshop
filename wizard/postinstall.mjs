@@ -100,10 +100,10 @@ try {
 
   log('Workshop overlay applied.');
 
-  // Patch upstream index.ts to handle missing Sandbox binding
-  const indexPath = resolve(UPSTREAM, 'src/index.ts');
-  if (existsSync(indexPath)) {
-    let indexCode = readFileSync(indexPath, 'utf-8');
+  // Patch src/index.ts to handle missing Sandbox binding (for no-Docker deployments)
+  const srcIndexPath = resolve(ROOT, 'src/index.ts');
+  if (existsSync(srcIndexPath)) {
+    let indexCode = readFileSync(srcIndexPath, 'utf-8');
     
     // Replace getSandbox call to check if Sandbox binding exists
     const originalGetSandbox = `  const options = buildSandboxOptions(c.env);
@@ -118,8 +118,33 @@ try {
     
     if (indexCode.includes(originalGetSandbox)) {
       indexCode = indexCode.replace(originalGetSandbox, patchedGetSandbox);
-      writeFileSync(indexPath, indexCode);
-      ok('Patched index.ts to handle missing Sandbox binding');
+      writeFileSync(srcIndexPath, indexCode);
+      ok('Patched src/index.ts to handle missing Sandbox binding');
+    }
+
+    // Disable CF Access requirement check
+    if (indexCode.includes('if (!isTestMode)')) {
+      indexCode = indexCode.replace(
+        'if (!isTestMode)',
+        'if (false && !isTestMode) // CF Access is optional'
+      );
+      writeFileSync(srcIndexPath, indexCode);
+      ok('Patched src/index.ts to make CF Access optional');
+    }
+  }
+
+  // Patch src/auth/middleware.ts to skip CF Access checks
+  const authMiddlewarePath = resolve(ROOT, 'src/auth/middleware.ts');
+  if (existsSync(authMiddlewarePath)) {
+    let authCode = readFileSync(authMiddlewarePath, 'utf-8');
+    
+    if (authCode.includes('if (!teamDomain || !expectedAud)')) {
+      authCode = authCode.replace(
+        'if (!teamDomain || !expectedAud)',
+        'if (false && (!teamDomain || !expectedAud)) // Skip CF Access check'
+      );
+      writeFileSync(authMiddlewarePath, authCode);
+      ok('Patched src/auth/middleware.ts to skip CF Access checks');
     }
   }
 } catch (e) {
