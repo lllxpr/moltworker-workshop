@@ -133,14 +133,16 @@ async function cfApi(method, path, accountId, apiToken, body) {
 
 function setSecret(name, value) {
   try {
-    execSync(`npx wrangler secret put ${name}`, {
+    const result = execSync(`npx wrangler secret put ${name}`, {
       input: value + '\n',
       encoding: 'utf-8',
-      stdio: ['pipe', 'pipe', 'pipe'],
+      stdio: ['pipe', 'pipe', 'inherit'],
       cwd: ROOT,
     });
     return true;
-  } catch {
+  } catch (e) {
+    // Log error for debugging
+    if (e.stderr) console.error(`  Error: ${e.stderr.toString().trim()}`);
     return false;
   }
 }
@@ -334,6 +336,9 @@ R2_SECRET_ACCESS_KEY=
     console.log(`${Y}${B}  🔑 SAVE THIS GATEWAY TOKEN:${R}`);
     console.log(`  ${config.gatewayToken}`);
     ln();
+
+    // Determine if R2 is configured
+    const setupR2 = !!(config.r2AccessKeyId && config.r2SecretAccessKey);
 
     // Skip to review step
   } else {
@@ -688,13 +693,14 @@ R2_SECRET_ACCESS_KEY=
   info('  7. Redeploy: npm run deploy');
 
   // Save config
+  const hasR2 = !!(config.r2AccessKeyId && config.r2SecretAccessKey);
   saveConfig({
     accountId: config.accountId,
     accountName: config.accountName || '',
     gatewayId: config.gatewayId,
     model: config.model,
     gatewayToken: config.gatewayToken,
-    r2Bucket: setupR2 ? 'moltbot-data' : null,
+    r2Bucket: hasR2 ? 'moltbot-data' : null,
     createdAt: new Date().toISOString(),
   });
 
