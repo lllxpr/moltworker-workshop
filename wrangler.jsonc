@@ -89,24 +89,16 @@
   "browser": {
     "binding": "BROWSER",
   },
-  // Note: CF_ACCOUNT_ID should be set via `wrangler secret put CF_ACCOUNT_ID`
-  // Secrets to configure via `wrangler secret put`:
+  // Secrets to configure via `wrangler secret put` or the setup wizard:
   //
-  // AI Provider (at least one set required):
-  // - ANTHROPIC_API_KEY: Direct Anthropic API key
-  // - OPENAI_API_KEY: Direct OpenAI API key
-  // - Cloudflare AI Gateway (alternative to direct keys):
-  //   - CLOUDFLARE_AI_GATEWAY_API_KEY: API key for requests through the gateway
-  //   - CF_AI_GATEWAY_ACCOUNT_ID: Your Cloudflare account ID
-  //   - CF_AI_GATEWAY_GATEWAY_ID: Your AI Gateway ID
-  // - Legacy AI Gateway (still supported):
-  //   - AI_GATEWAY_API_KEY: API key
-  //   - AI_GATEWAY_BASE_URL: Gateway endpoint URL
+  // Required - AI Provider (Cloudflare AI Gateway):
+  // - CLOUDFLARE_AI_GATEWAY_API_KEY: API key for requests through the gateway
+  // - CF_AI_GATEWAY_ACCOUNT_ID: Your Cloudflare account ID
+  // - CF_AI_GATEWAY_GATEWAY_ID: Your AI Gateway ID
+  // - CF_AI_GATEWAY_MODEL: AI model to use (e.g., @cf/moonshotai/kimi-k2.5)
   //
-  // Authentication:
-  // - MOLTBOT_GATEWAY_TOKEN: Token to protect gateway access
-  // - CF_ACCESS_TEAM_DOMAIN: Cloudflare Access team domain
-  // - CF_ACCESS_AUD: Cloudflare Access application audience
+  // Required - Authentication:
+  // - MOLTBOT_GATEWAY_TOKEN: Token to protect gateway access (generate with: openssl rand -hex 32)
   //
   // Chat channels (optional):
   // - TELEGRAM_BOT_TOKEN, DISCORD_BOT_TOKEN, SLACK_BOT_TOKEN, SLACK_APP_TOKEN
