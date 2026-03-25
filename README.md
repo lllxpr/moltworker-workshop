@@ -1,8 +1,29 @@
 # Moltworker Workshop Edition
 
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/lllxpr/moltworker-workshop)
+
 > Deploy your own AI agent on Cloudflare in minutes — powered by **Workers AI Kimi K2.5**.
 
 This is a **workshop-ready fork** of [cloudflare/moltworker](https://github.com/cloudflare/moltworker) (OpenClaw) with an interactive setup wizard that automates the entire deployment process.
+
+## Two Ways to Deploy
+
+### Option 1: One-Click Deploy (Recommended for Quick Start)
+Click the **"Deploy to Cloudflare"** button above. Cloudflare will build the container in the cloud — **no local Docker needed**!
+
+After deployment, you'll still need to set secrets via the wizard:
+```bash
+npm run wizard
+```
+
+### Option 2: Local Wizard (Full Automation)
+Clone the repo and run the wizard locally (requires Docker for container builds):
+```bash
+git clone https://github.com/lllxpr/moltworker-workshop.git
+cd moltworker-workshop
+npm install
+npm run wizard
+```
 
 ## What's Different from the Official Repo?
 
