@@ -305,10 +305,17 @@ R2_SECRET_ACCESS_KEY=
       }
     }
 
-    // Parse the bulk input
+    // Parse the bulk input - filter out comments and empty lines
+    const cleanInput = bulkInput
+      .split('\n')
+      .filter(line => line.trim() && !line.trim().startsWith('#'))
+      .join('\n');
+
     const parseValue = (key) => {
-      const match = bulkInput.match(new RegExp(`^${key}=(.*)$`, 'm'));
-      return match ? match[1].trim() : '';
+      const match = cleanInput.match(new RegExp(`^${key}=(.*)$`, 'm'));
+      const value = match ? match[1].trim() : '';
+      // Remove any trailing comments
+      return value.split('#')[0].trim();
     };
 
     apiToken = parseValue('CLOUDFLARE_API_TOKEN');
