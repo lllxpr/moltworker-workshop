@@ -5,10 +5,7 @@
 # ANTHROPIC_API_KEY=sk-ant-...  # Not needed for workshop
 # OPENAI_API_KEY=sk-...  # Not needed for workshop
 
-# Cloudflare API Token (for wizard automation)
-CLOUDFLARE_API_TOKEN=your-cloudflare-api-token
-
-# AI Gateway Configuration (required for workshop)
+# AI Gateway Configuration (required for runtime)
 AI_GATEWAY_ID=moltworker-workshop
 AI_GATEWAY_AUTH_TOKEN=your-ai-gateway-auth-token
 AI_MODEL=@cf/moonshotai/kimi-k2.5
