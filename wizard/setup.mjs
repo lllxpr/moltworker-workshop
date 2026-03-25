@@ -131,13 +131,14 @@ async function cfApi(method, path, accountId, apiToken, body) {
   return json;
 }
 
-function setSecret(name, value) {
+function setSecret(name, value, accountId) {
   try {
     const result = execSync(`npx wrangler secret put ${name}`, {
       input: value + '\n',
       encoding: 'utf-8',
       stdio: ['pipe', 'pipe', 'inherit'],
       cwd: ROOT,
+      env: { ...process.env, CLOUDFLARE_ACCOUNT_ID: accountId },
     });
     return true;
   } catch (e) {
@@ -669,7 +670,7 @@ R2_SECRET_ACCESS_KEY=
       continue;
     }
     info(`Setting ${s.name}...`);
-    if (setSecret(s.name, s.value)) {
+    if (setSecret(s.name, s.value, config.accountId)) {
       ok(`${s.name} ✓`);
     } else {
       warn(`Failed to set ${s.name}`);
