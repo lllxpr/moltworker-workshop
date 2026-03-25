@@ -36,13 +36,22 @@
   "vars": {
     "DEV_MODE": "true"
   },
-  // Container configuration for the Moltbot sandbox
-  // NOTE: Containers run in Cloudflare's cloud, BUT Wrangler requires local Docker
-  // to BUILD the container image before deployment. If you don't have Docker locally,
-  // you must comment out this section. Python code execution will be disabled.
+  // ⚠️ Container Configuration (Currently Disabled)
   // 
-  // To enable containers:
-  // 1. Install Docker Desktop and start it
+  // Cloudflare Containers run in the cloud, BUT Wrangler CLI requires LOCAL Docker
+  // to build the container image before deployment. This is a Wrangler limitation.
+  // 
+  // Official docs: https://developers.cloudflare.com/containers/get-started/
+  // "You must have Docker running locally when you run wrangler deploy"
+  //
+  // Without containers, Python code execution is disabled, but all other features work:
+  // ✅ AI conversations (via Cloudflare AI Gateway)
+  // ✅ R2 persistent storage
+  // ✅ Browser rendering
+  // ❌ Python code execution (requires containers)
+  //
+  // To enable containers (requires local Docker):
+  // 1. Install and start Docker Desktop
   // 2. Uncomment the sections below
   // 3. Run: npm run deploy
   //
